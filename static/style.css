@@ -1,0 +1,20 @@
+body,p{
+    margin: 0px;
+}
+.hide {
+    display: none;
+}
+#mainImage {
+    width: 1241px;
+    height: 250px
+}
+
+#homeText {
+    letter-spacing: 1px;
+    position: absolute;
+    top: 30px;
+    left: 555px;
+    font-size: 25px;
+    font-family: sans-serif;
+    width: 161px;
+}
