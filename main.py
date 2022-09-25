@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 from service import db, user_collection
 
 app = Flask(__name__)
