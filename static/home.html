@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Stock Search</title>
+    <title>Analytics</title>
     <meta http-equiv="content-type">
     <meta content="text/html">
     <meta charset="UTF-8">
@@ -10,6 +10,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
 </head>
 <body onload="onload()">
     <div id="container">
@@ -20,6 +21,19 @@
             </div>
             
         </div>
+        <div class="row">
+            <div class="col-sm">
+                <h2 class="chartLabel">Player dies before completing the level</h2>
+                <canvas class="chart" id="deathChart" style="width: 100%; height: 400px; display: block"></canvas>
+            </div>
+            <div id = "deathChartError" class="hide" ></div>
+            <div class="col-sm">
+                <h2 class="chartLabel">Players Start vs Finish the level</h2>
+                <canvas class="chart" id="startFinishChart" style="width: 100%; height: 400px; display: block"></canvas>
+            </div>
+            <div id = "startFinishChartError" class="hide"></div>
+        </div>
+        
         
 </body>
 

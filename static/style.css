@@ -4,17 +4,27 @@ body,p{
 .hide {
     display: none;
 }
+
+.chart {
+    min-width: 310px;
+    max-width: 800px;
+    margin: 1em auto;
+}
+
+.chartLabel {
+    text-align: center;
+}
+
 #mainImage {
-    width: 1241px;
-    height: 250px
+    width: 100%;
 }
 
 #homeText {
-    letter-spacing: 1px;
+    letter-spacing: 3px;
     position: absolute;
     top: 30px;
-    left: 555px;
-    font-size: 25px;
+    left: 30%;
+    font-size: 40px;
     font-family: sans-serif;
-    width: 161px;
 }
+

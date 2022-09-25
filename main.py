@@ -1,3 +1,5 @@
+import json
+from operator import ne
 from flask import Flask, redirect, url_for
 from service import db, user_collection
 
@@ -21,6 +23,41 @@ def update(level, data):
     else:
         dataInsertion(data_details,level, data)
     return "Done"
+
+
+@app.route('/deathData')
+def getDeathData():
+    cursor = user_collection.find()
+    total_death = {}
+    level = []
+    levelDeathCount = []
+    for next in cursor:
+        temp = next
+        level.append(int(next["_id"]))
+        levelDeathCount.append(next["loseLevCount"])
+    total_death["level"] = level
+    total_death["deathCount"] = levelDeathCount 
+    res = json.dumps(total_death, indent=4)
+    return res
+
+
+@app.route('/startFinishData')
+def getStartFinishData():
+    cursor = user_collection.find()
+    data = {}
+    level = []
+    levelFinishCount = []
+    levelStartCount = []
+    for next in cursor:
+        temp = next
+        level.append(int(next["_id"]))
+        levelFinishCount.append(next["loseLevCount"]+next["winLevCount"])
+        levelStartCount.append(next["startLevCount"])
+    data["level"] = level
+    data["startCount"] = levelStartCount 
+    data["finishCount"] = levelFinishCount 
+    res = json.dumps(data, indent=4)
+    return res
 
 
 #data: 1 = level start, 2 = level win, 3 = level lose
