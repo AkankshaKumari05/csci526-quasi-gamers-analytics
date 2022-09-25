@@ -90,7 +90,7 @@ function getStartFinishData(){
             labels: data["level"],
             datasets: [{
                 label: "Start",
-                backgroundColor: "#A85055",
+                backgroundColor: "#26619C",
                 data: data["startCount"]
             }, {
                 label: "Finish",
