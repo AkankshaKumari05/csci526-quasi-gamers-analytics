@@ -1,5 +1,5 @@
-//var serverUrl="http://127.0.0.1:5000/"
-var serverUrl="https://csci526-quasi-gamers-analytics.wl.r.appspot.com/"
+var serverUrl="http://127.0.0.1:5000/"
+//var serverUrl="https://csci526-quasi-gamers-analytics.wl.r.appspot.com/"
 
 function onload(){
     $(document).keydown(function(event) {
@@ -26,9 +26,12 @@ function getDeathData(){
             
             var xValues = data["level"];
             var yValues = data["deathCount"];
-            maxy = Math.max(yValues[0])
+            maxy = Math.max(...yValues)
             if (maxy < 10 ){
-                maxy = maxy*2
+                maxy = 1
+            }
+            else{
+                maxy = 5
             }
             new Chart("deathChart", {
             type: "bar",
@@ -44,9 +47,8 @@ function getDeathData(){
                 scales: {
                     yAxes: [{
                         ticks: {
-                            stepSize: 1,
-                            min: 0, 
-                            max: maxy,
+                            stepSize: maxy,
+                            min: 0
                         },
                         scaleLabel: {
                             display: true,
@@ -108,7 +110,7 @@ function getStartFinishData(){
                 yAxes: [{
                     ticks: {
                     min: 0,
-                    stepSize: 1,
+                    stepSize: 5,
                     },
                     scaleLabel: {
                         display: true,
