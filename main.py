@@ -51,7 +51,7 @@ def getStartFinishData():
     for next in cursor:
         temp = next
         level.append(int(next["_id"]))
-        levelFinishCount.append(next["loseLevCount"]+next["winLevCount"])
+        levelFinishCount.append(next["winLevCount"])
         levelStartCount.append(next["startLevCount"])
     data["level"] = level
     data["startCount"] = levelStartCount 
