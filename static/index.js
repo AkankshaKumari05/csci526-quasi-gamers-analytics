@@ -10,6 +10,8 @@ function onload(){
     $("#searchText").val('');
     getDeathData();
     getStartFinishData();
+    getLaunchpadUsedCount();
+    getWallBreakUsedCount();
 }
 
 
@@ -133,3 +135,127 @@ function getStartFinishData(){
         $("#startFinishChartError").text("Network Error: Internal Server Error")
     });
 }
+
+
+function getWallBreakUsedCount(){
+    url=serverUrl+"wallBreakUsedData"
+    fetch(url, {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+    },
+    }).then((response) => response.json().then((data) => {
+        if (response.status == 200) {
+            
+            var xValues = data["level"];
+            var yValues = data["wallBreakUsed"];
+            maxy = Math.max(...yValues)
+            if (maxy < 10 ){
+                maxy = 1
+            }
+            else{
+                maxy = 5
+            }
+            new Chart("wallBreakUsedChart", {
+            type: "bar",
+            data: {
+                labels: xValues,
+                datasets: [{
+                data: yValues,
+                backgroundColor: "#BA3A4B"
+                }]
+            },
+            options: {
+                legend: {display: false},
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            stepSize: maxy,
+                            min: 0
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Number of Player'
+                        }
+                    }],
+                    xAxes:[{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Level'
+                            }
+                    }]
+                }
+            }
+            });
+        }
+    })).catch(function(error) {
+        console.log(error)
+        $('#wallBreakUsedChart').addClass('hide');
+        $('#wallBreakUsedError').removeClass('hide');
+        $("#wallBreakUsedError").text("Network Error: Internal Server Error")
+    });
+}
+
+
+
+function getLaunchpadUsedCount(){
+    url=serverUrl+"launchpadUsedData"
+    fetch(url, {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+    },
+    }).then((response) => response.json().then((data) => {
+        if (response.status == 200) {
+            
+            var xValues = data["level"];
+            var yValues = data["launchpadUsed"];
+            maxy = Math.max(...yValues)
+            if (maxy < 10 ){
+                maxy = 1
+            }
+            else{
+                maxy = 5
+            }
+            new Chart("launchpadUsedChart", {
+            type: "bar",
+            data: {
+                labels: xValues,
+                datasets: [{
+                data: yValues,
+                backgroundColor: "#BA3A4B"
+                }]
+            },
+            options: {
+                legend: {display: false},
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            stepSize: maxy,
+                            min: 0
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Number of Player'
+                        }
+                    }],
+                    xAxes:[{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Level'
+                            }
+                    }]
+                }
+            }
+            });
+        }
+    })).catch(function(error) {
+        console.log(error)
+        $('#launchpadUsedChart').addClass('hide');
+        $('#launchpadUsedError').removeClass('hide');
+        $("#launchpadUsedError").text("Network Error: Internal Server Error")
+    });
+}
+
