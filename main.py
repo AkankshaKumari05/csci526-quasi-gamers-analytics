@@ -65,8 +65,9 @@ def getWallBreakUsedCount():
     level = []
     breakUsedCount = []
     for next in cursor:
-        level.append(int(next["_id"]))
-        breakUsedCount.append(next["wallBreakUsed"])
+        if int(next["_id"]) == 3:
+            level.append(int(next["_id"]))
+            breakUsedCount.append(next["wallBreakUsed"])
     wallBreakUsed["level"] = level
     wallBreakUsed["wallBreakUsed"] = breakUsedCount 
     res = json.dumps(wallBreakUsed, indent=4)
@@ -79,8 +80,9 @@ def getLaunchpadUsedCount():
     level = []
     launchpadUsedCount = []
     for next in cursor:
-        level.append(int(next["_id"]))
-        launchpadUsedCount.append(next["launchpadUsed"])
+        if int(next["_id"]) in [2, 4, 5]:
+            level.append(int(next["_id"]))
+            launchpadUsedCount.append(next["launchpadUsed"])
     launchpadUsed["level"] = level
     launchpadUsed["launchpadUsed"] = launchpadUsedCount 
     res = json.dumps(launchpadUsed, indent=4)

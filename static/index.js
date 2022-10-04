@@ -29,12 +29,7 @@ function getDeathData(){
             var xValues = data["level"];
             var yValues = data["deathCount"];
             maxy = Math.max(...yValues)
-            if (maxy < 10 ){
-                maxy = 1
-            }
-            else{
-                maxy = 5
-            }
+            maxy = getStepSize(maxy)
             new Chart("deathChart", {
             type: "bar",
             data: {
@@ -89,7 +84,9 @@ function getStartFinishData(){
             console.log(data)
 
             var ctx = document.getElementById("startFinishChart").getContext("2d");
-            
+            maxs = Math.max(...data["startCount"])
+            maxf = Math.max(...data["finishCount"])
+            maxy = getStepSize(Math.max(maxs, maxf))
             var dataset = {
             labels: data["level"],
             datasets: [{
@@ -112,7 +109,7 @@ function getStartFinishData(){
                 yAxes: [{
                     ticks: {
                     min: 0,
-                    stepSize: 5,
+                    stepSize: maxy,
                     },
                     scaleLabel: {
                         display: true,
@@ -151,12 +148,7 @@ function getWallBreakUsedCount(){
             var xValues = data["level"];
             var yValues = data["wallBreakUsed"];
             maxy = Math.max(...yValues)
-            if (maxy < 10 ){
-                maxy = 1
-            }
-            else{
-                maxy = 5
-            }
+            maxy = getStepSize(maxy)
             new Chart("wallBreakUsedChart", {
             type: "bar",
             data: {
@@ -213,12 +205,7 @@ function getLaunchpadUsedCount(){
             var xValues = data["level"];
             var yValues = data["launchpadUsed"];
             maxy = Math.max(...yValues)
-            if (maxy < 10 ){
-                maxy = 1
-            }
-            else{
-                maxy = 5
-            }
+            maxy = getStepSize(maxy)
             new Chart("launchpadUsedChart", {
             type: "bar",
             data: {
@@ -259,3 +246,21 @@ function getLaunchpadUsedCount(){
     });
 }
 
+function getStepSize(num){
+    if (num < 10)
+        return 1
+    else if (num < 100)
+        return 10
+    else if (num < 1000)
+        {
+            num = Math.round(num/100)
+            num = num*10
+            return num
+        }
+    else{
+        num = Math.round(num/1000)
+        num = num*100
+        return num
+    }
+        
+}
