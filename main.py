@@ -46,7 +46,7 @@ def homepage():
 
 @app.route('/update/<string:level_id>/<string:attr_id>')
 def update(level_id, attr_id):
-    if level_id > NUM_LEVEL:
+    if int(level_id) > NUM_LEVEL:
         return "Error in updating level {}".format(level_id)
     level = "level_" + level_id
     analytics_data = analytics_ref.get().to_dict()
