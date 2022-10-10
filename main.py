@@ -1,170 +1,103 @@
 import json
-from operator import ne
-from flask import Flask, redirect, url_for
-from service import db, user_collection
+from enum import Enum
+
+from flask import Flask, redirect, url_for, jsonify
+from flask_cors import CORS
+from firebase_admin import credentials, firestore, initialize_app
 
 app = Flask(__name__)
+CORS(app)
+
+cred = credentials.Certificate("cs526-analytics-firebase-adminsdk.json")
+initialize_app(cred)
+db = firestore.client()
+analytics_ref = db.collection('analytics').document("analytics_data")
+
+num_level = 6
+
+if not analytics_ref.get().exists:
+    analytics_ref.set({})
+
+
+class Attributes(Enum):
+    startLevCount = 1
+    winLevCount = 2
+    loseLevCount = 3
+    wallBreakUsed = 4
+    launchpadUsed = 5
+
+
+class Graphs(Enum):
+    death = {"attrs": [Attributes.loseLevCount], "levels": '*'}
+    start_finish = {"attrs": [Attributes.startLevCount, Attributes.winLevCount], "levels": '*'}
+    wall_breaker_used = {"attrs": [Attributes.wallBreakUsed], "levels": [3]}
+    launch_pad_used = {"attrs": [Attributes.launchpadUsed], "levels": [2, 4, 5]}
+
 
 @app.route("/test")
 def test():
     return "Service is up duhhhh!!!!!"
-    
+
 
 @app.route('/home')
 def homepage():
     return redirect(url_for('static', filename='home.html'))
 
 
-@app.route('/update/<string:level>/<string:data>')
-def update(level, data):
-    status, data_details =  checkLevelExits(level)
-    if status:
-        dataUpdatation(data_details,level, data)
-    else:
-        dataInsertion(data_details,level, data)
+@app.route('/update/<string:level_id>/<string:attr_id>')
+def update(level_id, attr_id):
+    level = "level_" + level_id
+    analytics_data = analytics_ref.get().to_dict()
+    attr_name = Attributes(int(attr_id)).name
+
+    if level not in analytics_data:
+        analytics_data[level] = {}
+
+    analytics_data[level][attr_name] = analytics_data[level].get(attr_name, 0) + 1
+    analytics_ref.update(analytics_data)
     return "Done"
+
+
+def get_graph_data(graph):
+    graph_attr = graph.value
+    attrs, levels = graph_attr['attrs'], graph_attr['levels']
+    arr = [[0 for j in range(num_level + 1)] for i in range(len(attrs))]
+    for level, level_data in analytics_ref.get().to_dict().items():
+        level_id = int(level.split("_")[-1])
+        for i, attr in enumerate(attrs):
+            arr[i][level_id] = level_data.get(attr.name, 0)
+
+    if levels == '*':
+        levels = [x for x in range(num_level + 1)]
+
+    res = {"level": levels}
+
+    for i, attr in enumerate(attrs):
+        res[attr.name] = arr[i] if levels == '*' else [arr[i][x] for x in levels]
+
+    return jsonify(res)
 
 
 @app.route('/deathData')
 def getDeathData():
-    cursor = user_collection.find()
-    total_death = {}
-    level = []
-    levelDeathCount = []
-    for next in cursor:
-        level.append(int(next["_id"]))
-        levelDeathCount.append(next["loseLevCount"])
-    total_death["level"] = level
-    total_death["deathCount"] = levelDeathCount 
-
-    res = json.dumps(total_death, indent=4)
-    return res
+    return get_graph_data(Graphs.death)
 
 
 @app.route('/startFinishData')
 def getStartFinishData():
-    cursor = user_collection.find()
-    data = {}
-    level = []
-    levelFinishCount = []
-    levelStartCount = []
-    for next in cursor:
-        level.append(int(next["_id"]))
-        levelFinishCount.append(next["winLevCount"])
-        levelStartCount.append(next["startLevCount"])
-    data["level"] = level
-    data["startCount"] = levelStartCount 
-    data["finishCount"] = levelFinishCount 
-    res = json.dumps(data, indent=4)
-    return res
+    return get_graph_data(Graphs.start_finish)
+
 
 @app.route('/wallBreakUsedData')
 def getWallBreakUsedCount():
-    cursor = user_collection.find()
-    wallBreakUsed = {}
-    level = []
-    breakUsedCount = []
-    for next in cursor:
-        if int(next["_id"]) == 3:
-            level.append(int(next["_id"]))
-            breakUsedCount.append(next["wallBreakUsed"])
-    wallBreakUsed["level"] = level
-    wallBreakUsed["wallBreakUsed"] = breakUsedCount 
-    res = json.dumps(wallBreakUsed, indent=4)
-    return res
+    return get_graph_data(Graphs.wall_breaker_used)
+
 
 @app.route('/launchpadUsedData')
 def getLaunchpadUsedCount():
-    cursor = user_collection.find()
-    launchpadUsed = {}
-    level = []
-    launchpadUsedCount = []
-    for next in cursor:
-        if int(next["_id"]) in [2, 4, 5]:
-            level.append(int(next["_id"]))
-            launchpadUsedCount.append(next["launchpadUsed"])
-    launchpadUsed["level"] = level
-    launchpadUsed["launchpadUsed"] = launchpadUsedCount 
-    res = json.dumps(launchpadUsed, indent=4)
-    return res
-
-#data: 1 = level start, 2 = level win, 3 = level lose
-def dataUpdatation(data_details,level, data):
-
-    print("Update with level "+level+" and data "+data)
-
-    myquery = { "_id": level }
-    newvalues = { "$set": {} }
-
-    if data == '1':
-        newvalues["$set"]["startLevCount"] = data_details["startLevCount"]+1
-    elif data == '2':
-        newvalues["$set"]["winLevCount"] = data_details["winLevCount"]+1
-    elif data == "3":
-        newvalues["$set"]["loseLevCount"] = data_details["loseLevCount"]+1
-    elif data == "4":
-        newvalues["$set"]["wallBreakUsed"] = data_details["wallBreakUsed"]+1
-    elif data == "5":
-        newvalues["$set"]["launchpadUsed"] = data_details["launchpadUsed"]+1
-
-    user_collection.update_one(myquery, newvalues)
-
-
-def dataInsertion(data_details,level, data):
-
-    print("First Insert with level "+level+" and data "+data)
-
-    data_details["_id"] = level
-
-    if data == '1':
-        data_details["startLevCount"] = 1
-        data_details["winLevCount"] = 0
-        data_details["loseLevCount"] = 0
-        data_details["wallBreakUsed"] = 0
-        data_details["launchpadUsed"] = 0
-    elif data == '2':
-        data_details["startLevCount"] = 0
-        data_details["winLevCount"] = 1
-        data_details["loseLevCount"] = 0
-        data_details["wallBreakUsed"] = 0
-        data_details["launchpadUsed"] = 0
-    elif data == "3":
-        data_details["startLevCount"] = 0
-        data_details["winLevCount"] = 0
-        data_details["loseLevCount"] = 1
-        data_details["wallBreakUsed"] = 0
-        data_details["launchpadUsed"] = 0
-    elif data == "4":
-        data_details["startLevCount"] = 0
-        data_details["winLevCount"] = 0
-        data_details["loseLevCount"] = 0
-        data_details["wallBreakUsed"] = 1
-        data_details["launchpadUsed"] = 0
-    elif data == "5":
-        data_details["startLevCount"] = 0
-        data_details["winLevCount"] = 0
-        data_details["loseLevCount"] = 0
-        data_details["wallBreakUsed"] = 0
-        data_details["launchpadUsed"] = 1
-
-    user_collection.insert_one(data_details)
-
-
-def checkLevelExits(level):
-
-    cursor = user_collection.find({"_id":level})
-    res_details = []
-
-    for next in cursor:
-        res_details.append(next)
-
-    if len(res_details) == 0:
-        return False, {}
-
-    return True, res_details[0]
+    return get_graph_data(Graphs.launch_pad_used)
 
 
 if __name__ == "__main__":
-    
     app.config['DEBUG'] = True
     app.run()

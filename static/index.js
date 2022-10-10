@@ -1,5 +1,5 @@
-//var serverUrl="http://127.0.0.1:5000/"
-var serverUrl="https://csci526-quasi-gamers-analytics.wl.r.appspot.com/"
+var serverUrl="http://127.0.0.1:5000/"
+// var serverUrl="https://csci526-quasi-gamers-analytics.wl.r.appspot.com/"
 
 function onload(){
     $(document).keydown(function(event) {
@@ -27,7 +27,8 @@ function getDeathData(){
         if (response.status == 200) {
             
             var xValues = data["level"];
-            var yValues = data["deathCount"];
+            var yValues = data["loseLevCount"];
+
             maxy = Math.max(...yValues)
             maxy = getStepSize(maxy)
             new Chart("deathChart", {
@@ -84,19 +85,19 @@ function getStartFinishData(){
             console.log(data)
 
             var ctx = document.getElementById("startFinishChart").getContext("2d");
-            maxs = Math.max(...data["startCount"])
-            maxf = Math.max(...data["finishCount"])
+            maxs = Math.max(...data["startLevCount"])
+            maxf = Math.max(...data["winLevCount"])
             maxy = getStepSize(Math.max(maxs, maxf))
             var dataset = {
             labels: data["level"],
             datasets: [{
                 label: "Start",
                 backgroundColor: "#26619C",
-                data: data["startCount"]
+                data: data["startLevCount"]
             }, {
                 label: "Finish",
                 backgroundColor: "#932B4B",
-                data: data["finishCount"]
+                data: data["winLevCount"]
             }]
             };
 
@@ -204,6 +205,7 @@ function getLaunchpadUsedCount(){
             
             var xValues = data["level"];
             var yValues = data["launchpadUsed"];
+            console.log(data)
             maxy = Math.max(...yValues)
             maxy = getStepSize(maxy)
             new Chart("launchpadUsedChart", {
