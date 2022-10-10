@@ -13,7 +13,7 @@ initialize_app(cred)
 db = firestore.client()
 analytics_ref = db.collection('analytics').document("analytics_data")
 
-num_level = 6
+NUM_LEVEL = 6
 
 if not analytics_ref.get().exists:
     analytics_ref.set({})
@@ -46,6 +46,8 @@ def homepage():
 
 @app.route('/update/<string:level_id>/<string:attr_id>')
 def update(level_id, attr_id):
+    if level_id > NUM_LEVEL:
+        return "Error in updating level {}".format(level_id)
     level = "level_" + level_id
     analytics_data = analytics_ref.get().to_dict()
     attr_name = Attributes(int(attr_id)).name
@@ -61,14 +63,14 @@ def update(level_id, attr_id):
 def get_graph_data(graph):
     graph_attr = graph.value
     attrs, levels = graph_attr['attrs'], graph_attr['levels']
-    arr = [[0 for j in range(num_level + 1)] for i in range(len(attrs))]
+    arr = [[0 for j in range(NUM_LEVEL + 1)] for i in range(len(attrs))]
     for level, level_data in analytics_ref.get().to_dict().items():
         level_id = int(level.split("_")[-1])
         for i, attr in enumerate(attrs):
             arr[i][level_id] = level_data.get(attr.name, 0)
 
     if levels == '*':
-        levels = [x for x in range(num_level + 1)]
+        levels = [x for x in range(NUM_LEVEL + 1)]
 
     res = {"level": levels}
 

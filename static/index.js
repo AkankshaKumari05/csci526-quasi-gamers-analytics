@@ -1,5 +1,5 @@
-var serverUrl="http://127.0.0.1:5000/"
-// var serverUrl="https://csci526-quasi-gamers-analytics.wl.r.appspot.com/"
+// var serverUrl="http://127.0.0.1:5000/"
+var serverUrl="https://csci526-quasi-gamers.wl.r.appspot.com/"
 
 function onload(){
     $(document).keydown(function(event) {
