@@ -25,6 +25,8 @@ class Attributes(Enum):
     loseLevCount = 3
     wallBreakUsed = 4
     launchpadUsed = 5
+    enemiesRespawned = 6
+    playerDistance = 7
 
 
 class Graphs(Enum):
@@ -32,6 +34,8 @@ class Graphs(Enum):
     start_finish = {"attrs": [Attributes.startLevCount, Attributes.winLevCount], "levels": '*'}
     wall_breaker_used = {"attrs": [Attributes.wallBreakUsed], "levels": [3]}
     launch_pad_used = {"attrs": [Attributes.launchpadUsed], "levels": [2, 4, 5]}
+    enemy_respawned = {"attrs": [Attributes.enemiesRespawned], "levels": '*'}
+    player_distance = {"attrs": [Attributes.playerDistance], "levels": '*'}
 
 
 @app.route("/test")
@@ -56,6 +60,21 @@ def update(level_id, attr_id):
         analytics_data[level] = {}
 
     analytics_data[level][attr_name] = analytics_data[level].get(attr_name, 0) + 1
+    analytics_ref.update(analytics_data)
+    return "Done"
+
+@app.route('/distance/<string:level_id>/<string:attr_id>')
+def dist(level_id, attr_id):
+    if int(level_id) > NUM_LEVEL:
+        return "Error in updating level " + level_id
+    level = "level_" + level_id
+    analytics_data = analytics_ref.get().to_dict()
+    attr_name = Attributes(7).name
+
+    if level not in analytics_data:
+        analytics_data[level] = {}
+
+    analytics_data[level][attr_name] = analytics_data[level].get(attr_name, 0) + float(attr_id)
     analytics_ref.update(analytics_data)
     return "Done"
 
@@ -98,6 +117,16 @@ def getWallBreakUsedCount():
 @app.route('/launchpadUsedData')
 def getLaunchpadUsedCount():
     return get_graph_data(Graphs.launch_pad_used)
+
+
+@app.route('/enemyRespawnData')
+def getEnemyRespawnCount():
+    return get_graph_data(Graphs.enemy_respawned)
+
+
+@app.route('/playerDistanceData')
+def getPlayerDistanceCount():
+    return get_graph_data(Graphs.player_distance)
 
 
 if __name__ == "__main__":

@@ -12,6 +12,8 @@ function onload(){
     getStartFinishData();
     getLaunchpadUsedCount();
     getWallBreakUsedCount();
+    getEnemyRespawnCount();
+    getPlayerDistanceCount();
 }
 
 
@@ -245,6 +247,120 @@ function getLaunchpadUsedCount(){
         $('#launchpadUsedChart').addClass('hide');
         $('#launchpadUsedError').removeClass('hide');
         $("#launchpadUsedError").text("Network Error: Internal Server Error")
+    });
+}
+
+
+function getEnemyRespawnCount(){
+    url=serverUrl+"enemyRespawnData"
+    fetch(url, {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+    },
+    }).then((response) => response.json().then((data) => {
+        if (response.status == 200) {
+            
+            var xValues = data["level"];
+            var yValues = data["enemiesRespawned"];
+            console.log(data)
+            maxy = Math.max(...yValues)
+            maxy = getStepSize(maxy)
+            new Chart("enemyRespawnedChart", {
+            type: "bar",
+            data: {
+                labels: xValues,
+                datasets: [{
+                data: yValues,
+                backgroundColor: "#BA3A4B"
+                }]
+            },
+            options: {
+                legend: {display: false},
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            stepSize: maxy,
+                            min: 0
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Number of Enemy'
+                        }
+                    }],
+                    xAxes:[{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Level'
+                            }
+                    }]
+                }
+            }
+            });
+        }
+    })).catch(function(error) {
+        console.log(error)
+        $('#enemyRespawnedChart').addClass('hide');
+        $('#enemyRespawnedError').removeClass('hide');
+        $("#enemyRespawnedError").text("Network Error: Internal Server Error")
+    });
+}
+
+
+function getPlayerDistanceCount(){
+    url=serverUrl+"playerDistanceData"
+    fetch(url, {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+    },
+    }).then((response) => response.json().then((data) => {
+        if (response.status == 200) {
+            
+            var xValues = data["level"];
+            var yValues = data["playerDistance"];
+            console.log(data)
+            maxy = Math.max(...yValues)
+            maxy = getStepSize(parseInt(maxy))
+            new Chart("playerDistanceChart", {
+            type: "bar",
+            data: {
+                labels: xValues,
+                datasets: [{
+                data: yValues,
+                backgroundColor: "#BA3A4B"
+                }]
+            },
+            options: {
+                legend: {display: false},
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            stepSize: maxy,
+                            min: 0
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Player distance covered'
+                        }
+                    }],
+                    xAxes:[{
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Level'
+                            }
+                    }]
+                }
+            }
+            });
+        }
+    })).catch(function(error) {
+        console.log(error)
+        $('#playerDistanceChart').addClass('hide');
+        $('#playerDistanceError').removeClass('hide');
+        $("#playerDistanceError").text("Network Error: Internal Server Error")
     });
 }
 
