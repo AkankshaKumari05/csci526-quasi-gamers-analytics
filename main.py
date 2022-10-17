@@ -13,7 +13,7 @@ initialize_app(cred)
 db = firestore.client()
 analytics_ref = db.collection('analytics').document("analytics_data")
 
-NUM_LEVEL = 6
+NUM_LEVEL = 7
 
 if not analytics_ref.get().exists:
     analytics_ref.set({})
@@ -32,7 +32,7 @@ class Attributes(Enum):
 class Graphs(Enum):
     death = {"attrs": [Attributes.loseLevCount], "levels": '*'}
     start_finish = {"attrs": [Attributes.startLevCount, Attributes.winLevCount], "levels": '*'}
-    wall_breaker_used = {"attrs": [Attributes.wallBreakUsed], "levels": [3]}
+    wall_breaker_used = {"attrs": [Attributes.wallBreakUsed], "levels": [3, 5]}
     launch_pad_used = {"attrs": [Attributes.launchpadUsed], "levels": [2, 4, 5]}
     enemy_respawned = {"attrs": [Attributes.enemiesRespawned], "levels": '*'}
     player_distance = {"attrs": [Attributes.playerDistance], "levels": '*'}
