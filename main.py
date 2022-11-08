@@ -12,11 +12,17 @@ cred = credentials.Certificate("cs526-analytics-firebase-adminsdk.json")
 initialize_app(cred)
 db = firestore.client()
 analytics_ref = db.collection('analytics').document("analytics_data")
+leaderboard_collection = db.collection('leaderboard')
 
 NUM_LEVEL = 7
 
 if not analytics_ref.get().exists:
     analytics_ref.set({})
+
+for i in range(NUM_LEVEL + 1):
+    leaderboard_ref = leaderboard_collection.document("lv_{}".format(i))
+    if not leaderboard_ref.get().exists:
+        leaderboard_ref.set({})
 
 
 class Attributes(Enum):
@@ -48,6 +54,28 @@ def homepage():
     return redirect(url_for('static', filename='home.html'))
 
 
+@app.route('/update_leaderboard/<string:username>/<int:level>/<int:time>')
+def update_leaderboard(username, level, time):
+    if level > NUM_LEVEL:
+        return 'invalid level', 418
+
+    leaderboard_ref = leaderboard_collection.document("lv_{}".format(level))
+    leaderboard_lv_data = leaderboard_ref.get().to_dict()
+    if username not in leaderboard_lv_data or time < leaderboard_lv_data[username]:
+        leaderboard_lv_data[username] = time
+        leaderboard_ref.update(leaderboard_lv_data)
+    return "Done"
+
+
+@app.route('/leaderboard/<int:level>')
+def get_leaderboard(level):
+    if level > NUM_LEVEL:
+        return 'invalid level', 418
+    leaderboard = leaderboard_collection.document("lv_{}".format(level)).get().to_dict()
+    sorted_lb = sorted([[k, v] for k, v in leaderboard.items()], key=lambda x: x[1])
+    return jsonify({"Items": [{"username": k, "time": v} for k, v in sorted_lb]})
+
+
 @app.route('/update/<string:level_id>/<string:attr_id>')
 def update(level_id, attr_id):
     if int(level_id) > NUM_LEVEL:
@@ -62,6 +90,7 @@ def update(level_id, attr_id):
     analytics_data[level][attr_name] = analytics_data[level].get(attr_name, 0) + 1
     analytics_ref.update(analytics_data)
     return "Done"
+
 
 @app.route('/distance/<string:level_id>/<string:attr_id>')
 def dist(level_id, attr_id):
