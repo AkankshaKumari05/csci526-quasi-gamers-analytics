@@ -14,15 +14,24 @@ db = firestore.client()
 analytics_ref = db.collection('analytics').document("analytics_data")
 leaderboard_collection = db.collection('leaderboard')
 
-NUM_LEVEL = 7
+NUM_LEVEL = 11
 
-if not analytics_ref.get().exists:
-    analytics_ref.set({})
 
-for i in range(NUM_LEVEL + 1):
-    leaderboard_ref = leaderboard_collection.document("lv_{}".format(i))
-    if not leaderboard_ref.get().exists:
-        leaderboard_ref.set({})
+def init():
+    init_analytics_ref()
+    init_leaderboard_ref()
+
+
+def init_analytics_ref():
+    if not analytics_ref.get().exists:
+        analytics_ref.set({})
+
+
+def init_leaderboard_ref():
+    for level in range(NUM_LEVEL + 1):
+        leaderboard_ref = leaderboard_collection.document("lv_{}".format(level))
+        if not leaderboard_ref.get().exists:
+            leaderboard_ref.set({})
 
 
 class Attributes(Enum):
@@ -38,8 +47,8 @@ class Attributes(Enum):
 class Graphs(Enum):
     death = {"attrs": [Attributes.loseLevCount], "levels": '*'}
     start_finish = {"attrs": [Attributes.startLevCount, Attributes.winLevCount], "levels": '*'}
-    wall_breaker_used = {"attrs": [Attributes.wallBreakUsed], "levels": [3, 5]}
-    launch_pad_used = {"attrs": [Attributes.launchpadUsed], "levels": [2, 4, 5]}
+    wall_breaker_used = {"attrs": [Attributes.wallBreakUsed], "levels": [2, 3, 7]}
+    launch_pad_used = {"attrs": [Attributes.launchpadUsed], "levels": [2, 5, 6, 7, 8, 9, 11]}
     enemy_respawned = {"attrs": [Attributes.enemiesRespawned], "levels": '*'}
     player_distance = {"attrs": [Attributes.playerDistance], "levels": '*'}
 
@@ -77,7 +86,8 @@ def get_leaderboard(level):
 
 
 @app.route('/update/<string:level_id>/<string:attr_id>')
-def update(level_id, attr_id):
+def update(level_id, attr_id, attr_val=1):
+    init()
     if int(level_id) > NUM_LEVEL:
         return "Error in updating level " + level_id
     level = "level_" + level_id
@@ -87,28 +97,18 @@ def update(level_id, attr_id):
     if level not in analytics_data:
         analytics_data[level] = {}
 
-    analytics_data[level][attr_name] = analytics_data[level].get(attr_name, 0) + 1
+    analytics_data[level][attr_name] = analytics_data[level].get(attr_name, 0) + attr_val
     analytics_ref.update(analytics_data)
     return "Done"
 
 
-@app.route('/distance/<string:level_id>/<string:attr_id>')
-def dist(level_id, attr_id):
-    if int(level_id) > NUM_LEVEL:
-        return "Error in updating level " + level_id
-    level = "level_" + level_id
-    analytics_data = analytics_ref.get().to_dict()
-    attr_name = Attributes(7).name
-
-    if level not in analytics_data:
-        analytics_data[level] = {}
-
-    analytics_data[level][attr_name] = analytics_data[level].get(attr_name, 0) + float(attr_id)
-    analytics_ref.update(analytics_data)
-    return "Done"
+@app.route('/distance/<string:level_id>/<string:attr_val>')
+def dist(level_id, attr_val):
+    return update(level_id, 7, attr_val)
 
 
 def get_graph_data(graph):
+    init()
     graph_attr = graph.value
     attrs, levels = graph_attr['attrs'], graph_attr['levels']
     arr = [[0 for j in range(NUM_LEVEL + 1)] for i in range(len(attrs))]
